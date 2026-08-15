@@ -1,0 +1,2 @@
+"""DataAgent Lite application package."""
+

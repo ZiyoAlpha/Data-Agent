@@ -1,0 +1,80 @@
+<!doctype html>
+<html lang="zh-CN">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <meta name="color-scheme" content="dark" />
+    <title>DataAgent Lite</title>
+    <link rel="stylesheet" href="/assets/styles.css" />
+  </head>
+  <body>
+    <div class="shell">
+      <aside class="sidebar">
+        <div class="brand">
+          <span class="brand-mark">D</span>
+          <div>
+            <strong>DataAgent Lite</strong>
+            <small>Local knowledge · OpenAI</small>
+          </div>
+        </div>
+
+        <section class="panel status-panel">
+          <div class="panel-title">
+            <span>运行状态</span>
+            <span id="healthDot" class="health-dot"></span>
+          </div>
+          <dl>
+            <div><dt>模型</dt><dd id="modelName">—</dd></div>
+            <div><dt>LLM</dt><dd id="llmState">检查中</dd></div>
+            <div><dt>已索引文档</dt><dd id="documentCount">0</dd></div>
+          </dl>
+          <button id="reindexButton" class="secondary-button">重建知识库索引</button>
+        </section>
+
+        <section class="panel search-panel">
+          <div class="panel-title">检索预览</div>
+          <form id="searchForm">
+            <input id="searchInput" aria-label="检索关键词" placeholder="输入关键词" maxlength="4000" />
+            <button type="submit" class="icon-button" aria-label="检索">↗</button>
+          </form>
+          <div id="searchResults" class="search-results empty">暂无检索结果</div>
+        </section>
+
+        <p class="privacy-note">知识库留在本机；命中的片段会随问题发送到你配置的 OpenAI API。</p>
+      </aside>
+
+      <main class="chat">
+        <header>
+          <div>
+            <span class="eyebrow">LOCAL RAG WORKSPACE</span>
+            <h1>用自己的资料，得到有出处的回答。</h1>
+          </div>
+          <button id="clearButton" class="ghost-button">清空对话</button>
+        </header>
+
+        <div id="messages" class="messages" aria-live="polite">
+          <article class="message assistant welcome">
+            <div class="avatar">D</div>
+            <div class="bubble">
+              <p>你好，我会先检索本地知识库，再基于命中内容回答。</p>
+              <p>当前示例库是空的。请先按 README 放入你自己的非敏感文档，并重建索引。</p>
+            </div>
+          </article>
+        </div>
+
+        <footer>
+          <form id="chatForm" class="composer">
+            <textarea id="questionInput" aria-label="问题" placeholder="问一个与本地资料有关的问题…" rows="1" maxlength="12000"></textarea>
+            <button id="sendButton" type="submit">发送</button>
+          </form>
+          <div class="footer-meta">
+            <span id="requestState">就绪</span>
+            <span id="usageState">缓存 token：—</span>
+          </div>
+        </footer>
+      </main>
+    </div>
+    <script src="/assets/app.js" defer></script>
+  </body>
+</html>
+
