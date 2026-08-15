@@ -19,7 +19,7 @@ from .llm import OpenAILLM
 
 
 logging.basicConfig(level=logging.INFO, format="%(levelname)s %(message)s")
-logger = logging.getLogger("dataagent-lite")
+logger = logging.getLogger("database-dataagent-lite")
 knowledge_base = LocalKnowledgeBase(settings.knowledge_base_dir)
 knowledge_writer = LocalKnowledgeWriter(settings.knowledge_base_dir, knowledge_base)
 llm = OpenAILLM(settings)
@@ -61,8 +61,8 @@ async def lifespan(_: FastAPI):
 
 
 app = FastAPI(
-    title="DataAgent Lite",
-    description="A local-first, public-safe DataAgent starter.",
+    title="Database DataAgent Lite",
+    description="A local-first, public-safe DataAgent for database analytics knowledge.",
     version="0.1.0",
     lifespan=lifespan,
 )

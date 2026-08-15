@@ -47,7 +47,7 @@ class ApiTest(unittest.TestCase):
             response = client.get("/")
 
         self.assertEqual(response.status_code, 200)
-        self.assertIn("DataAgent Lite", response.text)
+        self.assertIn("Database DataAgent Lite", response.text)
 
     def test_write_endpoint_uses_safe_writer_and_updates_index(self):
         with tempfile.TemporaryDirectory() as directory:

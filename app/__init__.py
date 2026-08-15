@@ -1,2 +1,1 @@
-"""DataAgent Lite application package."""
-
+"""Database DataAgent Lite application package."""

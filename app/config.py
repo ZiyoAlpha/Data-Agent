@@ -31,7 +31,7 @@ class Settings:
     max_context_chars: int = _int_env("MAX_CONTEXT_CHARS", 9000, 1000, 30000)
     max_output_tokens: int = _int_env("MAX_OUTPUT_TOKENS", 1200, 128, 8000)
     prompt_cache_key: str = os.getenv(
-        "PROMPT_CACHE_KEY", "dataagent-lite-v1"
+        "PROMPT_CACHE_KEY", "database-dataagent-lite-v1"
     ).strip()
     knowledge_base_dir: Path = PROJECT_ROOT / "knowledge_base" / "common"
 

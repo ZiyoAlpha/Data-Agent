@@ -4,7 +4,7 @@
     <meta charset="UTF-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
     <meta name="color-scheme" content="dark" />
-    <title>DataAgent Lite</title>
+    <title>Database DataAgent Lite</title>
     <link rel="stylesheet" href="/assets/styles.css" />
   </head>
   <body>
@@ -13,8 +13,8 @@
         <div class="brand">
           <span class="brand-mark">D</span>
           <div>
-            <strong>DataAgent Lite</strong>
-            <small>Local knowledge · OpenAI</small>
+            <strong>Database DataAgent Lite</strong>
+            <small>Database knowledge · OpenAI</small>
           </div>
         </div>
 
@@ -47,7 +47,7 @@
         <header>
           <div>
             <span class="eyebrow">LOCAL RAG WORKSPACE</span>
-            <h1>用自己的资料，得到有出处的回答。</h1>
+            <h1>用自己的数据库知识，得到有出处的分析回答。</h1>
           </div>
           <button id="clearButton" class="ghost-button">清空对话</button>
         </header>
@@ -56,7 +56,7 @@
           <article class="message assistant welcome">
             <div class="avatar">D</div>
             <div class="bubble">
-              <p>你好，我会先检索本地知识库，再基于命中内容回答。</p>
+              <p>你好，我会先检索本地的数据库分析知识，再基于命中内容回答。</p>
               <p>当前示例库是空的。请先按 README 放入你自己的非敏感文档，并重建索引。</p>
               <p>需要保存对话内容时，请明确说“帮我沉淀到知识库”；普通聊天不会写入。</p>
             </div>
@@ -65,7 +65,7 @@
 
         <footer>
           <form id="chatForm" class="composer">
-            <textarea id="questionInput" aria-label="问题" placeholder="问一个与本地资料有关的问题…" rows="1" maxlength="12000"></textarea>
+            <textarea id="questionInput" aria-label="问题" placeholder="问一个与数据库知识有关的问题…" rows="1" maxlength="12000"></textarea>
             <button id="sendButton" type="submit">发送</button>
           </form>
           <div class="footer-meta">
