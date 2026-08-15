@@ -33,7 +33,7 @@ class Settings:
     prompt_cache_key: str = os.getenv(
         "PROMPT_CACHE_KEY", "dataagent-lite-v1"
     ).strip()
-    knowledge_base_dir: Path = PROJECT_ROOT / "knowledge_base"
+    knowledge_base_dir: Path = PROJECT_ROOT / "knowledge_base" / "common"
 
     @property
     def llm_ready(self) -> bool:
@@ -41,4 +41,3 @@ class Settings:
 
 
 settings = Settings()
-

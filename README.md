@@ -6,7 +6,7 @@
 
 ## 功能
 
-- 本地知识库：读取 `knowledge_base/` 中用户自行放入的 `.md` / `.txt` 文件。
+- 本地知识库：沿用明确的 `knowledge_base/common/` 分类结构，读取用户自行放入的 `.md` / `.txt` 文件。
 - 检索机制：SQLite FTS5 全文索引、中文 Bigram/单字扩展、BM25 排序与归一化，采用“列出本地文件 → 建索引 → top-k 检索 → 读取原文”的简单流程。
 - OpenAI 调用：只保留 OpenAI Responses API，不包含其他模型供应商。
 - 缓存友好提示词：稳定系统规则和历史消息在前，本轮知识库结果与问题在后，并使用固定 `prompt_cache_key`。
@@ -34,11 +34,11 @@ python run.py
 
 ## 使用本地知识库
 
-1. 把你自己的 `.md` 或 `.txt` 文件放进 `knowledge_base/`。不要提交私密文件。
+1. 按 `knowledge_base/README.md` 的分类说明，把你自己的 `.md` 或 `.txt` 文件放进 `knowledge_base/common/` 对应目录。不要提交私密文件。
 2. 在页面点击“重建索引”。
 3. 先用“检索预览”确认召回结果，再开始提问。
 
-`knowledge_base/README.md` 只用于说明，不会被索引。索引保存在 `knowledge_base/.dataagent/index.db`，已在 `.gitignore` 中排除。
+`knowledge_base/README.md` 只用于说明，不会被索引。仓库只提交空目录占位符，不包含真实知识。索引保存在 `knowledge_base/common/.dataagent/index.db`，已在 `.gitignore` 中排除。
 
 ## 缓存说明
 
@@ -67,4 +67,3 @@ python scripts/check_sensitive.py
 ## 安全边界
 
 本项目不会把知识库上传到专门的远程知识库服务，但被检索到的片段会随问题发送到 OpenAI API 以生成回答。请只放入你有权处理、且符合你所在组织数据政策的内容。详见 [SECURITY.md](SECURITY.md)。
-
