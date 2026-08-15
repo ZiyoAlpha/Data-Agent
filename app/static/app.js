@@ -50,14 +50,28 @@ function renderSearchResults(results) {
   `).join("");
 }
 
-function addMessage(role, content, sources = []) {
+function addMessage(role, content, sources = [], knowledgeWrite = null) {
   const article = document.createElement("article");
   article.className = `message ${role}`;
   const avatar = role === "assistant" ? '<div class="avatar">D</div>' : "";
   const sourceHtml = sources.length ? `
     <div class="sources">${sources.map((item) => `<span class="source-chip">${escapeHtml(item.path)}</span>`).join("")}</div>
   ` : "";
-  article.innerHTML = `${avatar}<div class="bubble"><p>${escapeHtml(content)}</p>${sourceHtml}</div>`;
+  const writeLabels = {
+    created: "已沉淀",
+    replaced: "已覆盖",
+    confirmation_required: "等待覆盖确认",
+    needs_input: "需要补充信息",
+    needs_path: "需要目标路径",
+    rejected: "写入被拒绝",
+  };
+  const writeHtml = knowledgeWrite ? `
+    <div class="knowledge-write ${escapeHtml(knowledgeWrite.status)}">
+      <span>${escapeHtml(writeLabels[knowledgeWrite.status] || "知识写入")}</span>
+      ${knowledgeWrite.path ? `<code>${escapeHtml(knowledgeWrite.path)}</code>` : ""}
+    </div>
+  ` : "";
+  article.innerHTML = `${avatar}<div class="bubble"><p>${escapeHtml(content)}</p>${sourceHtml}${writeHtml}</div>`;
   byId("messages").appendChild(article);
   article.scrollIntoView({ behavior: "smooth", block: "end" });
   return article;
@@ -114,7 +128,7 @@ byId("chatForm").addEventListener("submit", async (event) => {
   state.history.push({ role: "user", content: question });
   input.value = "";
   input.style.height = "auto";
-  setBusy(true, "正在检索并生成回答…");
+  setBusy(true, "正在处理…");
   const typing = addMessage("assistant", "思考中…");
   typing.querySelector(".bubble").classList.add("typing");
 
@@ -124,9 +138,12 @@ byId("chatForm").addEventListener("submit", async (event) => {
       body: JSON.stringify({ question, history: priorHistory }),
     });
     typing.remove();
-    addMessage("assistant", data.answer, data.sources);
+    addMessage("assistant", data.answer, data.sources, data.knowledgeWrite);
     state.history.push({ role: "assistant", content: data.answer });
     byId("usageState").textContent = `缓存 token：${data.usage.cachedTokens} · 输入：${data.usage.inputTokens}`;
+    if (["created", "replaced"].includes(data.knowledgeWrite?.status)) {
+      await refreshStatus();
+    }
     setBusy(false, `完成 · ${data.model}`);
   } catch (error) {
     typing.remove();
@@ -156,4 +173,3 @@ byId("clearButton").addEventListener("click", () => {
 });
 
 refreshStatus();
-

@@ -11,7 +11,9 @@ from fastapi.staticfiles import StaticFiles
 from pydantic import BaseModel, Field
 
 from .config import PROJECT_ROOT, settings
+from .knowledge_action import KnowledgeActionService
 from .knowledge_base import LocalKnowledgeBase
+from .knowledge_intent import is_explicit_knowledge_write
 from .knowledge_writer import KnowledgeWriteError, LocalKnowledgeWriter
 from .llm import OpenAILLM
 
@@ -118,13 +120,29 @@ def write_knowledge_document(request: KnowledgeWriteRequest) -> dict:
 
 @app.post("/api/chat")
 def chat(request: ChatRequest) -> dict:
+    history = [message.model_dump() for message in request.history]
+    if is_explicit_knowledge_write(request.question):
+        try:
+            return KnowledgeActionService(llm, knowledge_writer).handle(
+                request.question,
+                history,
+            )
+        except RuntimeError as error:
+            raise HTTPException(status_code=503, detail=str(error)) from error
+        except Exception as error:
+            logger.warning("Knowledge draft request failed: %s", error.__class__.__name__)
+            raise HTTPException(
+                status_code=502,
+                detail="Knowledge drafting failed. Check the local configuration and try again.",
+            ) from error
+
     results = knowledge_base.search(request.question, settings.top_k)
     context = knowledge_base.format_context(results, settings.max_context_chars)
     try:
         result = llm.answer(
             request.question,
             context,
-            [message.model_dump() for message in request.history],
+            history,
         )
     except RuntimeError as error:
         raise HTTPException(status_code=503, detail=str(error)) from error

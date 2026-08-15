@@ -39,6 +39,10 @@ MAX_DOCUMENT_CHARS = 100_000
 class KnowledgeWriteError(ValueError):
     """A safe, user-facing knowledge write validation error."""
 
+    def __init__(self, message: str, code: str = "invalid"):
+        super().__init__(message)
+        self.code = code
+
 
 @dataclass(frozen=True)
 class KnowledgeWriteResult:
@@ -110,7 +114,10 @@ class LocalKnowledgeWriter:
         if target.exists() and target.is_dir():
             raise KnowledgeWriteError("Target path is a directory")
         if target.exists() and not overwrite:
-            raise KnowledgeWriteError("Document already exists; set overwrite=true to replace it")
+            raise KnowledgeWriteError(
+                "Document already exists; set overwrite=true to replace it",
+                code="already_exists",
+            )
 
         now = datetime.now(timezone.utc).replace(microsecond=0).isoformat()
         document = self._render_document(
@@ -169,7 +176,8 @@ class LocalKnowledgeWriter:
                 )
             except FileExistsError as error:
                 raise KnowledgeWriteError(
-                    "Document already exists; set overwrite=true to replace it"
+                    "Document already exists; set overwrite=true to replace it",
+                    code="already_exists",
                 ) from error
             try:
                 with os.fdopen(descriptor, "w", encoding="utf-8") as handle:
