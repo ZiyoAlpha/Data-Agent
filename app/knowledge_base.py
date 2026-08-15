@@ -135,6 +135,52 @@ class LocalKnowledgeBase:
             )
         return {"indexed": indexed, "skipped": skipped, "lastIndexedAt": now}
 
+    def index_document(self, relative_path: str) -> bool:
+        """Incrementally add or replace one safe local document in the FTS5 index."""
+        raw_candidate = self.root / relative_path
+        if raw_candidate.is_symlink():
+            return False
+        candidate = raw_candidate.resolve()
+        try:
+            candidate.relative_to(self.root)
+        except ValueError:
+            return False
+        if (
+            not candidate.is_file()
+            or candidate.is_symlink()
+            or candidate.suffix.lower() not in SUPPORTED_SUFFIXES
+            or candidate.stat().st_size > MAX_FILE_BYTES
+        ):
+            return False
+        try:
+            content = candidate.read_text(encoding="utf-8")
+        except (OSError, UnicodeDecodeError):
+            return False
+
+        relative = candidate.relative_to(self.root).as_posix()
+        now = time.time()
+        doc_id = hashlib.sha256(relative.encode("utf-8")).hexdigest()[:24]
+        stat = candidate.stat()
+        searchable = " ".join(cjk_bigram(content))
+        with self._connect() as connection:
+            connection.execute("DELETE FROM documents_fts WHERE doc_id = ?", (doc_id,))
+            connection.execute(
+                """
+                INSERT OR REPLACE INTO documents(id, path, name, size, modified_at, indexed_at)
+                VALUES (?, ?, ?, ?, ?, ?)
+                """,
+                (doc_id, relative, candidate.stem, stat.st_size, stat.st_mtime, now),
+            )
+            connection.execute(
+                "INSERT INTO documents_fts(doc_id, doc_path, doc_name, content) VALUES (?, ?, ?, ?)",
+                (doc_id, relative, candidate.stem, searchable),
+            )
+            connection.execute(
+                "INSERT OR REPLACE INTO metadata(key, value) VALUES ('last_indexed_at', ?)",
+                (str(now),),
+            )
+        return True
+
     def stats(self) -> dict:
         if not self.db_path.exists():
             return {"documentCount": 0, "lastIndexedAt": None, "indexBytes": 0}
@@ -205,4 +251,3 @@ class LocalKnowledgeBase:
             parts.append(block[:remaining])
             used += min(len(block), remaining)
         return "\n\n---\n\n".join(parts)
-

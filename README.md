@@ -11,6 +11,7 @@
 - OpenAI 调用：只保留 OpenAI Responses API，不包含其他模型供应商。
 - 缓存友好提示词：稳定系统规则和历史消息在前，本轮知识库结果与问题在后，并使用固定 `prompt_cache_key`。
 - 简易前端：知识库状态、重建索引、检索预览和多轮问答。
+- 安全写入骨架：白名单分类、标准元数据、默认禁止覆盖、原子写入和增量索引。
 - 隐私默认值：服务只监听 `127.0.0.1`，请求设置 `store=False`，日志不记录问题、知识库内容或 API Key。
 
 ## 快速开始
@@ -53,6 +54,7 @@ OpenAI 的提示词缓存依赖完全一致的前缀。这里保持系统规则�
 - `GET /api/status`：配置和知识库状态（不会返回密钥）。
 - `POST /api/index`：重建本地 FTS5 索引。
 - `POST /api/search`：预览知识库检索结果。
+- `POST /api/knowledge/documents`：按 common 分类安全写入一篇本地 Markdown，并增量更新索引。
 - `POST /api/chat`：检索后调用 LLM。
 
 ## 测试与公开前检查

@@ -12,12 +12,14 @@ from pydantic import BaseModel, Field
 
 from .config import PROJECT_ROOT, settings
 from .knowledge_base import LocalKnowledgeBase
+from .knowledge_writer import KnowledgeWriteError, LocalKnowledgeWriter
 from .llm import OpenAILLM
 
 
 logging.basicConfig(level=logging.INFO, format="%(levelname)s %(message)s")
 logger = logging.getLogger("dataagent-lite")
 knowledge_base = LocalKnowledgeBase(settings.knowledge_base_dir)
+knowledge_writer = LocalKnowledgeWriter(settings.knowledge_base_dir, knowledge_base)
 llm = OpenAILLM(settings)
 
 
@@ -34,6 +36,17 @@ class HistoryMessage(BaseModel):
 class ChatRequest(BaseModel):
     question: str = Field(min_length=1, max_length=12000)
     history: List[HistoryMessage] = Field(default_factory=list, max_length=20)
+
+
+class KnowledgeWriteRequest(BaseModel):
+    section: str = Field(min_length=1, max_length=80)
+    slug: str = Field(min_length=1, max_length=100)
+    title: str = Field(min_length=1, max_length=160)
+    summary: str = Field(min_length=1, max_length=500)
+    body: str = Field(min_length=1, max_length=100000)
+    sourceRef: str = Field(default="", max_length=1000)
+    confidence: Literal["draft", "verified", "deprecated"] = "draft"
+    overwrite: bool = False
 
 
 @asynccontextmanager
@@ -85,6 +98,24 @@ def search(request: SearchRequest) -> dict:
     }
 
 
+@app.post("/api/knowledge/documents", status_code=201)
+def write_knowledge_document(request: KnowledgeWriteRequest) -> dict:
+    try:
+        result = knowledge_writer.write_markdown(
+            section=request.section,
+            slug=request.slug,
+            title=request.title,
+            summary=request.summary,
+            body=request.body,
+            source_ref=request.sourceRef,
+            confidence=request.confidence,
+            overwrite=request.overwrite,
+        )
+    except KnowledgeWriteError as error:
+        raise HTTPException(status_code=400, detail=str(error)) from error
+    return {"ok": True, **result.public_dict()}
+
+
 @app.post("/api/chat")
 def chat(request: ChatRequest) -> dict:
     results = knowledge_base.search(request.question, settings.top_k)
@@ -110,4 +141,3 @@ def chat(request: ChatRequest) -> dict:
         "usage": result.usage,
         "sources": [item.public_dict(include_content=False) for item in results],
     }
-
